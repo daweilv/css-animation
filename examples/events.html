@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>collapse.js - example - css-animation@1.5.0</title>
+  <title>events.js - example - css-animation@1.5.0</title>
   <meta name="viewport"
         content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <meta charset="utf-8"/>
@@ -269,57 +269,76 @@ Monokai Sublime style. Derived from Monokai by noformnocontent http://nn.mit-lic
     </div>
     <div class="example" id="__react-content"></div>
 
-    <div class="highlight"><pre><code language="js"><span class="hljs-keyword">import</span> anim <span class="hljs-keyword">from</span> <span class="hljs-string">'css-animation'</span>;
+    <div class="highlight"><pre><code language="js"><span class="hljs-keyword">import</span> Events <span class="hljs-keyword">from</span> <span class="hljs-string">'css-animation/lib/Event'</span>;
 <span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
 <span class="hljs-keyword">import</span> ReactDOM <span class="hljs-keyword">from</span> <span class="hljs-string">'react-dom'</span>;
 
 <span class="hljs-keyword">const</span> style = <span class="hljs-string">`
-
 .box {
   background:red;
   width:100px;
   height:100px;
-}
-.collapse-active {
-  transition: height .3s ease-out;
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.55, 0, 0.55, 0.2);
+  animation-play-state: paused;
+
+  animation-name: fadeIn;
+  animation-play-state: running;
 }
 
+.active {
+  animation-name: fadeOut;
+  animation-play-state: running;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
 `</span>;
 
-<span class="hljs-keyword">let</span> show = <span class="hljs-literal">true</span>;
+setTimeout(() =&gt; {
+  <span class="hljs-keyword">const</span> t = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'t'</span>);
+  Events.addStartEventListener(t, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'transition start...'</span>);
+  });
+  Events.addEndEventListener(t, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'transition end...'</span>);
+  });
+}, <span class="hljs-number">100</span>);
+
+<span class="hljs-keyword">let</span> changed = <span class="hljs-literal">false</span>;
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toggle</span>(<span class="hljs-params"></span>) </span>{
   <span class="hljs-keyword">const</span> t = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'t'</span>);
-  <span class="hljs-keyword">const</span> b = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'b'</span>);
-  b.disabled = <span class="hljs-literal">true</span>;
-  t.style.display = <span class="hljs-string">''</span>;
-  <span class="hljs-keyword">let</span> height;
-  anim(t, <span class="hljs-string">`collapse`</span>, {
-    start() {
-      <span class="hljs-keyword">if</span> (show) {
-        t.style.height = <span class="hljs-string">`<span class="hljs-subst">${t.offsetHeight}</span>px`</span>;
-      } <span class="hljs-keyword">else</span> {
-        height = t.offsetHeight;
-        t.style.height = <span class="hljs-number">0</span>;
-      }
-    },
-    active() {
-      t.style.height = <span class="hljs-string">`<span class="hljs-subst">${show ? height : 0}</span>px`</span>;
-    },
-    end() {
-      t.style.display = show ? <span class="hljs-string">''</span> : <span class="hljs-string">'none'</span>;
-      b.disabled = <span class="hljs-literal">false</span>;
-      t.style.height = <span class="hljs-string">''</span>;
-    },
-  });
-  show = !show;
+  changed = !changed;
+
+  <span class="hljs-keyword">if</span> (changed) {
+    t.className = <span class="hljs-string">'box active'</span>;
+  } <span class="hljs-keyword">else</span> {
+    t.className = <span class="hljs-string">'box'</span>;
+  }
 }
 
 ReactDOM.render(<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">div</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-title">style</span> <span class="hljs-attribute">dangerouslySetInnerHTML</span>=<span class="hljs-value">{{</span> <span class="hljs-attribute">__html:</span> <span class="hljs-attribute">style</span> }}&gt;</span><span class="css"></span><span class="hljs-tag">&lt;/<span class="hljs-title">style</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">"box"</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">"t"</span>&gt;</span>
   <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-title">button</span> <span class="hljs-attribute">onClick</span>=<span class="hljs-value">{toggle}</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">"b"</span>&gt;</span>toggle<span class="hljs-tag">&lt;/<span class="hljs-title">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">button</span> <span class="hljs-attribute">onClick</span>=<span class="hljs-value">{toggle}</span>&gt;</span>toggle<span class="hljs-tag">&lt;/<span class="hljs-title">button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>, document.getElementById('__react-content'));
 </span></code></pre></div>
   </div>
@@ -331,7 +350,7 @@ ReactDOM.render(<span class="xml"><span class="hljs-tag">&lt;<span class="hljs-t
   </a>
   <script>FastClick.attach(document.body);</script>
   <script src="../common.js?nowrap"></script>
-  <script src="collapse.js?nowrap"></script>
+  <script src="events.js?nowrap"></script>
 </body>
 
 </html>
